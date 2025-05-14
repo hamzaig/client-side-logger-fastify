@@ -1,0 +1,27 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: ["main"]
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create env file
+        run: |
+          touch .env
+
+          echo PAPERTRAIL_HOST='${{ secrets.PAPERTRAIL_HOST}}' >> .env
+          echo PAPERTRAIL_PORT='${{ secrets.PAPERTRAIL_PORT}}' >> .env
+
+          cat .env
+      - name: Build and deploy
+        run: |
+          sudo docker compose -f docker-compose-main.yml -p client-side-logger-fastify build
+          sudo docker compose -f docker-compose-main.yml -p client-side-logger-fastify down --remove-orphans
+          sudo docker compose -f docker-compose-main.yml -p client-side-logger-fastify up -d
+      - name: Clean up
+        run: |
+          sudo docker system prune -f
+          sudo docker volume prune -f

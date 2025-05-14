@@ -1,31 +1,60 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 import { sendLog } from "./utils/sendLog.js";
+import { logSchema } from "./validations/logs.validations.js";
+import { allowedOrigins } from "./config/cors.js";
 
 const fastify = Fastify();
 
-fastify.get("/", async (req, reply) => {
-  return { message: "Hello world!" };
+await fastify.register(cors, {
+  origin: allowedOrigins,
+  methods: ["POST", "GET"],
+  allowedHeaders: ["Content-Type"],
 });
 
-fastify.post("/log", async (req, reply) => {
+fastify.get("/", async (req, reply) => {
+  reply.code(200).send({ message: "Welcome to the logging server!" });
+});
+
+fastify.post("/logs", async (req, reply) => {
   try {
-    const { level, url, message, userAgent, timestamp } = req.body;
-    if (!level || !message || !timestamp) {
-      return reply.status(400).send({ error: "Missing required fields" });
+    const result = logSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return reply.status(400).send({ error: result.error.errors });
     }
-    const log = {
+
+    const { level, message, timestamp, url, userAgent, applicationName } =
+      result.data;
+
+    await sendLog({
       level,
       message,
-      timestamp: new Date(timestamp),
-    };
-
-    await sendLog(log);
-  } catch (error) {}
+      timestamp,
+      url,
+      userAgent,
+      applicationName,
+    });
+    reply.code(200).send({
+      success: true,
+      error: null,
+      message: "log added in papertrail successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    reply.status(500).send({ error: "Internal server error" });
+  }
 });
 
-fastify.listen({ port: 8080 }, (err, address) => {
+const PORT = process.env.PORT || 3001;
+
+fastify.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
   if (err) {
-    fastify.log.error(err);
+    console.error(err);
     process.exit(1);
   }
   console.info(`Server running at ${address}`);

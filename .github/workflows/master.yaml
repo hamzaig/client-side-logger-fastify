@@ -18,9 +18,9 @@ jobs:
           cat .env
       - name: Build and deploy
         run: |
-          sudo docker compose -f docker-compose-main.yml -p client-side-logger-fastify build
-          sudo docker compose -f docker-compose-main.yml -p client-side-logger-fastify down --remove-orphans
-          sudo docker compose -f docker-compose-main.yml -p client-side-logger-fastify up -d
+          sudo docker compose -f docker-compose.yml -p client-side-logger-fastify build
+          sudo docker compose -f docker-compose.yml -p client-side-logger-fastify down --remove-orphans
+          sudo docker compose -f docker-compose.yml -p client-side-logger-fastify up -d
       - name: Clean up
         run: |
           sudo docker system prune -f

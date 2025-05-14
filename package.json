@@ -1,0 +1,22 @@
+{
+  "name": "screen-recorder-logs",
+  "version": "1.0.0",
+  "description": "employee tracking system logs",
+  "keywords": [
+    "logs"
+  ],
+  "license": "ISC",
+  "author": "sajeel ahmed",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "fastify": "^5.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
